@@ -69,6 +69,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 /* DIVIDER */
 .divider{height:1px;background:var(--border);margin:4px 0}
 
+/* AI GENERATE BUTTON */
+.ai-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#7c3aed,#6d28d9);border:none;border-radius:8px;padding:11px 24px;cursor:pointer;transition:filter .2s,transform .15s}
+.ai-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.ai-btn:active{transform:translateY(0)}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;filter:none}
+.ai-btn-icon{font-size:1rem}
+.ai-status{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-faint);text-align:center;min-height:18px;margin-top:4px}
+.ai-status.error{color:var(--red)}
+.ai-status.success{color:var(--green)}
+
 /* GENERATE BUTTON */
 .gen-btn{font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#f7941d;border:none;border-radius:8px;padding:12px 24px;cursor:pointer;transition:filter .2s,transform .15s;width:100%}
 .gen-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
@@ -156,6 +166,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
       <span class="field-label">Topic Pills (comma-separated)</span>
       <input class="field-input" id="meta-topics" placeholder="Mobile, Hardware, Pioneers" value="Mobile, Hardware, Pioneers, History, Innovation">
     </div>
+
+    <div class="divider"></div>
+
+    <!-- AI GENERATE -->
+    <div class="field">
+      <span class="field-label">AI Topic Prompt</span>
+      <textarea class="field-textarea" id="ai-prompt" rows="3" placeholder="Describe the quiz topic, e.g. 'The history of USB standards and connectors' or 'Famous tech company pivots and rebrandings'"></textarea>
+    </div>
+    <button class="ai-btn" id="ai-btn">
+      <span class="ai-btn-icon">&#9733;</span>
+      <span class="ai-btn-text">Generate Questions with AI</span>
+    </button>
+    <div id="ai-status" class="ai-status"></div>
 
     <div class="divider"></div>
 
