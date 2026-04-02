@@ -177,15 +177,27 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 
 </div>
 
-<!--
-  PRIVATE JS LOADER
-  Replace the src below with your Google Drive direct-download link:
-  https://drive.google.com/uc?export=download&id=YOUR_FILE_ID
--->
-<script
-  src="https://drive.google.com/uc?export=download&id=1Rw4Li9avB-3qCMsMdzA6v-E2KVyRN7Lp"
-  onerror="document.getElementById('gen-loading').innerHTML='<div class=\'gen-loading-error\'>Failed to load generator.<br>You may not have access to this tool.<br><br>Contact Will for permission.</div>'"
-></script>
+<!-- PRIVATE JS LOADER — fetches from Google Drive -->
+<script>
+(function() {
+  var FILE_ID = '1Rw4Li9avB-3qCMsMdzA6v-E2KVyRN7Lp';
+  var url = 'https://drive.usercontent.google.com/download?id=' + FILE_ID + '&export=download';
+  fetch(url)
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function(js) {
+      var s = document.createElement('script');
+      s.textContent = js;
+      document.body.appendChild(s);
+    })
+    .catch(function() {
+      document.getElementById('gen-loading').innerHTML =
+        '<div class="gen-loading-error">Failed to load generator.<br>You may not have access to this tool.<br><br>Contact Will for permission.</div>';
+    });
+})();
+</script>
 
 </body>
 </html>
