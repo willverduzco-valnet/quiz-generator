@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Vignette Generator (TESTING)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d0e12;--surface:#13151b;--card:#1a1d25;--card-hover:#20232d;--border:#2a2d38;--border-light:#353845;--text:#e4e5eb;--text-dim:#7a7f90;--text-faint:#4e5264;--accent:#f7941d;--accent-soft:rgba(247,148,29,.12);--accent-mid:rgba(247,148,29,.35);--green:#34d399;--red:#f87171}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.5;padding:0}
+
+/* LAYOUT — 3 columns */
+.gen{display:grid;grid-template-columns:380px 1fr 1fr;min-height:100vh}
+.gen-sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.gen-preview{overflow-y:auto;padding:24px;border-right:1px solid var(--border)}
+.gen-output{overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+
+/* TESTING BANNER */
+.testing-banner{background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff;font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;text-align:center;padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.2)}
+
+/* LOADING / AUTH */
+.gen-loading{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px}
+.gen-loading-spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-loading-text{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)}
+.gen-loading-error{color:var(--red);font-family:'JetBrains Mono',monospace;font-size:.7rem;text-align:center;max-width:400px;line-height:1.6}
+.gen-auth-btn{display:inline-flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 24px;font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s}
+.gen-auth-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* SIDEBAR */
+.gen-title{font-family:'Outfit',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text)}
+.gen-sub{font-size:.75rem;color:var(--text-dim);margin-top:2px}
+.brand-grid{display:flex;gap:6px;flex-wrap:wrap}
+.brand-btn{display:flex;align-items:center;justify-content:center;height:36px;padding:0 14px;border-radius:8px;border:2px solid var(--border);background:var(--card);cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim)}
+.brand-btn:hover{border-color:var(--border-light);color:var(--text)}
+.brand-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.brand-btn[data-brand="htg"].active{border-color:#f7941d;color:#f7941d;background:rgba(247,148,29,.12)}
+.brand-btn[data-brand="xda"].active{border-color:#2daae9;color:#2daae9;background:rgba(45,170,233,.12)}
+.brand-btn[data-brand="muo"].active{border-color:#c60d0d;color:#c60d0d;background:rgba(198,13,13,.12)}
+.brand-btn[data-brand="ap"].active{border-color:#e01a4f;color:#e01a4f;background:rgba(224,26,79,.12)}
+.brand-btn[data-brand="pl"].active{border-color:#ed1c24;color:#ed1c24;background:rgba(237,28,36,.12)}
+.field{display:flex;flex-direction:column;gap:4px}
+.field-label{font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)}
+.field-input,.field-textarea{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;outline:none;transition:border-color .2s}
+.field-input:focus,.field-textarea:focus{border-color:var(--border-light)}
+.field-textarea{resize:vertical;min-height:60px}
+.field-input::placeholder,.field-textarea::placeholder{color:var(--text-faint)}
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.q-header{display:flex;align-items:center;justify-content:space-between}
+.q-num{font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:700;color:var(--text)}
+.q-cat-input{width:100px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;outline:none;text-align:right}
+.q-cat-input:focus{border-color:var(--border-light)}
+.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.opt-row{display:flex;align-items:center;gap:6px}
+.opt-letter{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:700;color:var(--text-faint);background:var(--surface);border:1px solid var(--border);flex-shrink:0}
+.opt-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:.78rem;outline:none}
+.opt-input:focus{border-color:var(--border-light)}
+.correct-row{display:flex;align-items:center;gap:8px}
+.correct-label{font-family:'JetBrains Mono',monospace;font-size:.55rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)}
+.correct-btns{display:flex;gap:4px}
+.correct-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text-faint);font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.correct-btn:hover{border-color:var(--border-light);color:var(--text)}
+.correct-btn.active{border-color:var(--green);color:var(--green);background:rgba(52,211,153,.1)}
+.divider{height:1px;background:var(--border);margin:4px 0}
+
+/* AI BUTTON */
+.ai-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#7c3aed,#6d28d9);border:none;border-radius:8px;padding:11px 24px;cursor:pointer;transition:filter .2s,transform .15s}
+.ai-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.ai-btn:active{transform:translateY(0)}
+.ai-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;filter:none}
+.ai-btn-icon{font-size:1rem}
+.ai-status{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-faint);text-align:center;min-height:18px;margin-top:4px}
+.ai-status.error{color:var(--red)}
+.ai-status.success{color:var(--green)}
+
+/* GENERATE + PREVIEW BUTTONS */
+.gen-btn{font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#f7941d;border:none;border-radius:8px;padding:12px 24px;cursor:pointer;transition:filter .2s,transform .15s;width:100%}
+.gen-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.gen-btn:active{transform:translateY(0)}
+.btn-row{display:flex;gap:8px}
+.btn-row .gen-btn{flex:1}
+.preview-btn{background:#2563eb}
+
+/* OUTPUT PANELS */
+.output-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.output-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)}
+.output-label{font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim)}
+.copy-btn{font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--green);background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:6px;padding:4px 10px;cursor:pointer;transition:all .15s}
+.copy-btn:hover{background:rgba(52,211,153,.2);border-color:rgba(52,211,153,.4)}
+.copy-btn.copied{color:#fff;background:var(--green);border-color:var(--green)}
+.output-code{padding:12px 14px;max-height:300px;overflow:auto;font-family:'JetBrains Mono',monospace;font-size:.7rem;line-height:1.5;color:var(--text-dim);white-space:pre-wrap;word-break:break-all;background:var(--bg)}
+.output-empty{padding:40px 14px;text-align:center;font-size:.8rem;color:var(--text-faint);font-style:italic}
+
+/* PREVIEW PANEL */
+.preview-label{font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px}
+.preview-frame{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;min-height:200px}
+.preview-empty{text-align:center;padding:60px 20px;font-size:.8rem;color:var(--text-faint);font-style:italic}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-light)}
+
+/* RESPONSIVE */
+@media(max-width:1200px){.gen{grid-template-columns:380px 1fr}.gen-preview{display:none}}
+@media(max-width:900px){.gen{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- AUTH GATE -->
+<div class="gen-loading" id="gen-auth">
+  <div class="gen-loading-text" style="margin-bottom:16px">Sign in with your authorized Google account</div>
+  <button class="gen-auth-btn" onclick="handleSignIn()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" width="18" height="18">
+    Sign in with Google
+  </button>
+</div>
+
+<!-- LOADING STATE -->
+<div class="gen-loading" id="gen-loading" style="display:none">
+  <div class="gen-loading-spinner"></div>
+  <div class="gen-loading-text">Loading generator...</div>
+</div>
+
+<!-- ERROR STATE -->
+<div class="gen-loading" id="gen-error" style="display:none">
+  <div class="gen-loading-error">Failed to load generator.<br>You may not have access to this tool.<br><br>Contact Will for permission.</div>
+</div>
+
+<div class="gen">
+
+  <!-- SIDEBAR -->
+  <div class="gen-sidebar" id="sidebar" style="display:none">
+    <div class="testing-banner">Testing Build &middot; Sentinel Tracking</div>
+    <div>
+      <div class="gen-title">Quiz Vignette Generator</div>
+      <div class="gen-sub">Build CSS-only quizzes for Emaki vignettes</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- AI GENERATE (top of sidebar) -->
+    <div class="field">
+      <span class="field-label">Brand</span>
+      <div class="brand-grid" id="brand-grid">
+        <div class="brand-btn active" data-brand="htg">HTG</div>
+        <div class="brand-btn" data-brand="xda">XDA</div>
+        <div class="brand-btn" data-brand="muo">MUO</div>
+        <div class="brand-btn" data-brand="ap">AP</div>
+        <div class="brand-btn" data-brand="pl">PL</div>
+      </div>
+    </div>
+    <div class="field">
+      <span class="field-label">AI Topic Prompt</span>
+      <textarea class="field-textarea" id="ai-prompt" rows="3" placeholder="Describe the quiz topic, e.g. 'The history of USB standards and connectors' or 'Famous tech company pivots and rebrandings'"></textarea>
+    </div>
+    <button class="ai-btn" id="ai-btn">
+      <span class="ai-btn-icon">&#9733;</span>
+      <span class="ai-btn-text">Generate All with AI</span>
+    </button>
+    <div id="ai-status" class="ai-status"></div>
+
+    <div class="divider"></div>
+
+    <!-- META (auto-filled by AI, editable) -->
+    <div class="field">
+      <span class="field-label">Quiz Title (line 1)</span>
+      <input class="field-input" id="meta-title1" placeholder="e.g. Tech History">
+    </div>
+    <div class="field">
+      <span class="field-label">Quiz Title (line 2)</span>
+      <input class="field-input" id="meta-title2" placeholder="e.g. Trivia Challenge">
+    </div>
+    <div class="field">
+      <span class="field-label">Quiz Slug (auto from Title 1, editable)</span>
+      <input class="field-input" id="meta-slug" placeholder="auto-generated-slug">
+    </div>
+    <div class="field">
+      <span class="field-label">Subtitle</span>
+      <input class="field-input" id="meta-sub" placeholder="One-line description...">
+    </div>
+    <div class="field">
+      <span class="field-label">Topic Pills (comma-separated)</span>
+      <input class="field-input" id="meta-topics" placeholder="Mobile, Hardware, Pioneers">
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- QUESTIONS -->
+    <div id="questions-container"></div>
+
+    <div class="divider"></div>
+    <div class="btn-row">
+      <button class="gen-btn preview-btn" id="preview-btn">Preview</button>
+      <button class="gen-btn" id="generate-btn">Generate Code</button>
+    </div>
+  </div>
+
+  <!-- LIVE PREVIEW -->
+  <div class="gen-preview" id="preview-panel" style="display:none">
+    <div class="preview-label">Live Preview</div>
+    <div class="preview-frame" id="preview-frame">
+      <div class="preview-empty">Click "Preview" to render the quiz</div>
+    </div>
+  </div>
+
+  <!-- CODE OUTPUT -->
+  <div class="gen-output" id="main" style="display:none">
+    <div class="output-section">
+      <div class="output-header">
+        <span class="output-label">CSS (paste into CSS field)</span>
+        <button class="copy-btn" data-target="out-css">Copy</button>
+      </div>
+      <div class="output-code output-empty" id="out-css">Click "Generate Code" to produce output</div>
+    </div>
+    <div class="output-section">
+      <div class="output-header">
+        <span class="output-label">HTML (paste into HTML field)</span>
+        <button class="copy-btn" data-target="out-html">Copy</button>
+      </div>
+      <div class="output-code output-empty" id="out-html">Click "Generate Code" to produce output</div>
+    </div>
+    <div class="output-section">
+      <div class="output-header">
+        <span class="output-label">JS (paste into JS field)</span>
+        <button class="copy-btn" data-target="out-js">Copy</button>
+      </div>
+      <div class="output-code output-empty" id="out-js">Click "Generate Code" to produce output</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://accounts.google.com/gsi/client"></script>
+<script>
+(function() {
+  var GCP_CLIENT_ID = '1026548183269-jebk6532n8767q35il7ruft9fb4rmar6.apps.googleusercontent.com';
+  // TESTING build — point at quiz-generator-testing.js on Drive
+  var FILE_ID = 'REPLACE_WITH_TESTING_FILE_ID';
+  var tokenClient;
+
+  window.handleSignIn = function() {
+    document.getElementById('gen-auth').style.display = 'none';
+    document.getElementById('gen-error').style.display = 'none';
+    document.getElementById('gen-loading').style.display = '';
+
+    if (!tokenClient) {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GCP_CLIENT_ID,
+        scope: 'https://www.googleapis.com/auth/drive.readonly',
+        callback: onTokenResponse
+      });
+    }
+    tokenClient.requestAccessToken();
+  };
+
+  function onTokenResponse(resp) {
+    if (resp.error) { showError(); return; }
+    loadScript(resp.access_token);
+  }
+
+  function loadScript(accessToken) {
+    fetch('https://www.googleapis.com/drive/v3/files/' + FILE_ID + '?alt=media', {
+      headers: { 'Authorization': 'Bearer ' + accessToken }
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function(js) {
+      document.getElementById('gen-loading').style.display = 'none';
+      var s = document.createElement('script');
+      s.textContent = js;
+      document.body.appendChild(s);
+    })
+    .catch(function() { showError(); });
+  }
+
+  function showError() {
+    document.getElementById('gen-loading').style.display = 'none';
+    document.getElementById('gen-error').style.display = '';
+  }
+})();
+</script>
+
+</body>
+</html>
