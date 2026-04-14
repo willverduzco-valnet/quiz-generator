@@ -44,6 +44,9 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 .field-input:focus,.field-textarea:focus{border-color:var(--border-light)}
 .field-textarea{resize:vertical;min-height:60px}
 .field-input::placeholder,.field-textarea::placeholder{color:var(--text-faint)}
+.slug-preview{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--text-faint);padding:2px 2px 0;word-break:break-all}
+.slug-preview em{font-style:italic;opacity:.7}
+.slug-preview b{color:var(--text-dim);font-weight:500}
 .q-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .q-header{display:flex;align-items:center;justify-content:space-between}
 .q-num{font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:700;color:var(--text)}
@@ -166,6 +169,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
     <div class="field">
       <span class="field-label">Quiz Title (line 1)</span>
       <input class="field-input" id="meta-title1" placeholder="e.g. Tech History">
+      <span class="slug-preview" id="slug-preview">Slug: <em>derived from title at runtime</em></span>
     </div>
     <div class="field">
       <span class="field-label">Quiz Title (line 2)</span>
