@@ -69,6 +69,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 .ai-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;filter:none}
 .ai-btn-icon{font-size:1rem}
 .ai-status{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-faint);text-align:center;min-height:18px;margin-top:4px}
+.ai-note{font-family:'DM Sans',sans-serif;font-size:.7rem;line-height:1.4;color:var(--text-dim);background:rgba(247,148,29,.08);border:1px solid rgba(247,148,29,.2);border-radius:6px;padding:8px 10px;margin-top:6px}
+.ai-note strong{color:#f7941d;font-weight:700}
 .ai-status.error{color:var(--red)}
 .ai-status.success{color:var(--green)}
 
@@ -159,6 +161,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
       <span class="ai-btn-text">Generate All with AI</span>
     </button>
     <div id="ai-status" class="ai-status"></div>
+    <div class="ai-note"><strong>Requires Chrome.</strong> Firefox and Safari block the API call. If generation fails, sign out of all Google accounts and keep only your Valnet-family account signed in.</div>
 
     <div class="divider"></div>
 
