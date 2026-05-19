@@ -11,11 +11,12 @@
 :root{--bg:#0d0e12;--surface:#13151b;--card:#1a1d25;--card-hover:#20232d;--border:#2a2d38;--border-light:#353845;--text:#e4e5eb;--text-dim:#7a7f90;--text-faint:#4e5264;--accent:#f7941d;--accent-soft:rgba(247,148,29,.12);--accent-mid:rgba(247,148,29,.35);--green:#34d399;--red:#f87171}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.5;padding:0}
 
-/* LAYOUT — 3 columns */
-.gen{display:grid;grid-template-columns:380px 1fr 1fr;min-height:100vh}
+/* LAYOUT — 2 columns */
+.gen{display:grid;grid-template-columns:440px 1fr;min-height:100vh}
 .gen-sidebar{background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
-.gen-preview{overflow-y:auto;padding:24px;border-right:1px solid var(--border)}
-.gen-output{overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+.gen-right{overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:24px}
+.gen-preview{}
+.gen-output{display:flex;flex-direction:column;gap:16px}
 
 /* LOADING / AUTH */
 .gen-loading{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px}
@@ -104,7 +105,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
 ::-webkit-scrollbar-thumb:hover{background:var(--border-light)}
 
 /* RESPONSIVE */
-@media(max-width:1200px){.gen{grid-template-columns:380px 1fr}.gen-preview{display:none}}
 @media(max-width:900px){.gen{grid-template-columns:1fr}}
 </style>
 </head>
@@ -162,6 +162,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
     </button>
     <div id="ai-status" class="ai-status"></div>
     <div class="ai-note"><strong>Requires Chrome.</strong> Firefox and Safari block the API call. If generation fails, sign out of all Google accounts and keep only your Valnet-family account signed in.</div>
+    <button class="gen-btn" id="regen-btn" onclick="document.getElementById('generate-btn').click();document.getElementById('preview-btn').click();">Regenerate Code and Preview</button>
 
     <div class="divider"></div>
 
@@ -188,43 +189,41 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans
     <!-- QUESTIONS -->
     <div id="questions-container"></div>
 
-    <div class="divider"></div>
-    <div class="btn-row">
-      <button class="gen-btn preview-btn" id="preview-btn">Preview</button>
-      <button class="gen-btn" id="generate-btn">Generate Code</button>
-    </div>
+    <!-- Hidden originals so quiz-generator.js can still trigger them programmatically -->
+    <button id="preview-btn" style="display:none"></button>
+    <button id="generate-btn" style="display:none"></button>
   </div>
 
-  <!-- LIVE PREVIEW -->
-  <div class="gen-preview" id="preview-panel" style="display:none">
-    <div class="preview-label">Live Preview</div>
-    <div class="preview-frame" id="preview-frame">
-      <div class="preview-empty">Click "Preview" to render the quiz</div>
-    </div>
-  </div>
-
-  <!-- CODE OUTPUT -->
-  <div class="gen-output" id="main" style="display:none">
-    <div class="output-section">
-      <div class="output-header">
-        <span class="output-label">CSS (paste into CSS field)</span>
-        <button class="copy-btn" data-target="out-css">Copy</button>
+  <!-- RIGHT PANE: PREVIEW + CODE OUTPUT (stacked, scroll together) -->
+  <div class="gen-right" id="right-pane">
+    <div class="gen-preview" id="preview-panel" style="display:none">
+      <div class="preview-label">Live Preview</div>
+      <div class="preview-frame" id="preview-frame">
+        <div class="preview-empty">Click "Regenerate Code and Preview" to render the quiz</div>
       </div>
-      <div class="output-code output-empty" id="out-css">Click "Generate Code" to produce output</div>
     </div>
-    <div class="output-section">
-      <div class="output-header">
-        <span class="output-label">HTML (paste into HTML field)</span>
-        <button class="copy-btn" data-target="out-html">Copy</button>
+    <div class="gen-output" id="main" style="display:none">
+      <div class="output-section">
+        <div class="output-header">
+          <span class="output-label">CSS (paste into CSS field)</span>
+          <button class="copy-btn" data-target="out-css">Copy</button>
+        </div>
+        <div class="output-code output-empty" id="out-css">Click "Regenerate Code and Preview" to produce output</div>
       </div>
-      <div class="output-code output-empty" id="out-html">Click "Generate Code" to produce output</div>
-    </div>
-    <div class="output-section">
-      <div class="output-header">
-        <span class="output-label">JS (paste into JS field)</span>
-        <button class="copy-btn" data-target="out-js">Copy</button>
+      <div class="output-section">
+        <div class="output-header">
+          <span class="output-label">HTML (paste into HTML field)</span>
+          <button class="copy-btn" data-target="out-html">Copy</button>
+        </div>
+        <div class="output-code output-empty" id="out-html">Click "Regenerate Code and Preview" to produce output</div>
       </div>
-      <div class="output-code output-empty" id="out-js">Click "Generate Code" to produce output</div>
+      <div class="output-section">
+        <div class="output-header">
+          <span class="output-label">JS (paste into JS field)</span>
+          <button class="copy-btn" data-target="out-js">Copy</button>
+        </div>
+        <div class="output-code output-empty" id="out-js">Click "Regenerate Code and Preview" to produce output</div>
+      </div>
     </div>
   </div>
 
